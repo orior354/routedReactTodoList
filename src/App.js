@@ -1,26 +1,65 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import axios from 'axios';
 
-function App() {
-  return (
+import NavBar from "./components/NavBar"
+
+import "./App.css";
+
+class App extends React.Component {
+
+  state = {
+    loaded: false,
+    todos: []
+  }
+
+  componentDidMount () {
+    axios.get('https://jsonplaceholder.typicode.com/todos')
+    .then(res => {
+      this.setState({todos: res.data, loaded: true});
+    })
+    .catch(e => {
+      console.log(e)
+    });
+  }
+
+  render () {
+    return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <NavBar 
+      loaded={this.state.loaded} 
+      todos={this.state.todos} 
+      deleteTodo={this.deleteTodo}
+      checkToggle={this.checkToggle}
+      />
     </div>
-  );
+    )
+  }
+
+  deleteTodo = (id) => {
+    axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`)
+    .then(res => {
+      console.log(res);
+      this.setState({
+        loaded: true,
+        todos: this.state.todos.filter(todo => todo.id !== id )
+      });
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+  }
+
+  checkToggle = (id) => {
+    this.setState({
+      loaded: true,
+      todo: this.state.todos.map(item => {
+        if(item.id !== id) return item
+        item.completed = !item.completed;
+        return item;
+      })
+    })
+    console.log(this.state, id)
+  }
 }
 
 export default App;
